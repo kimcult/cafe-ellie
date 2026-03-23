@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>메뉴 — Cafe Ellie</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --white: #ffffff;
+      --off-white: #F9F9F7;
+      --black: #0A0A0A;
+      --ash: #6B6B6B;
+      --lime: #C8F135;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', 'Noto Sans KR', -apple-system, sans-serif;
+      background: var(--white);
+      color: var(--black);
+      overflow-x: hidden;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 28px 60px;
+      background: rgba(255,255,255,0.88);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+      transition: padding 0.3s ease;
+    }
+    .nav-logo {
+      font-size: 18px; font-weight: 500; letter-spacing: 0.04em;
+      color: var(--black); text-decoration: none;
+    }
+    .nav-links { display: flex; gap: 40px; list-style: none; }
+    .nav-links a {
+      font-size: 13px; font-weight: 300; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--ash); text-decoration: none;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover, .nav-links a.active { color: var(--black); }
+
+    /* PAGE HERO */
+    .page-hero {
+      padding: 180px 60px 100px;
+      background: var(--white);
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+    }
+    .page-label {
+      display: block; font-size: 11px; font-weight: 300;
+      letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--ash); margin-bottom: 20px;
+    }
+    .page-headline {
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: clamp(52px, 7vw, 96px);
+      font-weight: 700; line-height: 1.0; letter-spacing: -0.02em;
+      color: var(--black);
+    }
+    .page-headline em {
+      font-style: normal; color: var(--lime);
+    }
+
+    /* MENU TABS */
+    .menu-tabs {
+      position: sticky; top: 80px; z-index: 50;
+      background: var(--white);
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+      padding: 0 60px;
+      display: flex; gap: 0;
+    }
+    .tab-btn {
+      font-size: 13px; font-weight: 400; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--ash);
+      padding: 20px 32px; background: none; border: none;
+      border-bottom: 2px solid transparent;
+      cursor: pointer; transition: color 0.2s, border-color 0.2s;
+    }
+    .tab-btn:hover { color: var(--black); }
+    .tab-btn.active { color: var(--black); border-bottom-color: var(--black); }
+
+    /* MENU SECTION */
+    .menu-section {
+      padding: 80px 60px 120px;
+      display: none;
+    }
+    .menu-section.active { display: block; }
+
+    .menu-category-label {
+      font-size: 11px; font-weight: 300; letter-spacing: 0.22em;
+      text-transform: uppercase; color: var(--lime);
+      margin-bottom: 48px; display: block;
+    }
+
+    .menu-list {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0;
+    }
+    .menu-item {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      padding: 40px 0;
+      border-bottom: 1px solid rgba(0,0,0,0.07);
+      gap: 24px;
+    }
+    .menu-item:nth-child(odd) { padding-right: 60px; }
+    .menu-item:nth-child(even) {
+      padding-left: 60px;
+      border-left: 1px solid rgba(0,0,0,0.07);
+    }
+    .item-info { flex: 1; }
+    .item-name {
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: 22px; font-weight: 700; color: var(--black);
+      margin-bottom: 10px; letter-spacing: -0.01em;
+    }
+    .item-name-en {
+      font-size: 12px; font-weight: 300; letter-spacing: 0.1em;
+      color: var(--ash); text-transform: uppercase; display: block;
+      margin-bottom: 10px;
+    }
+    .item-desc {
+      font-size: 14px; font-weight: 300; color: var(--ash);
+      line-height: 1.65;
+    }
+    .item-price {
+      font-size: 16px; font-weight: 400; color: var(--black);
+      white-space: nowrap; padding-top: 4px;
+    }
+    .item-badge {
+      display: inline-block;
+      background: var(--lime); color: var(--black);
+      font-size: 10px; font-weight: 500; letter-spacing: 0.1em;
+      text-transform: uppercase; padding: 3px 10px;
+      border-radius: 9999px; margin-bottom: 10px;
+    }
+
+    /* SEASONAL HIGHLIGHT */
+    .seasonal-highlight {
+      margin: 80px 0 0;
+      background: var(--black);
+      padding: 80px;
+      display: flex; align-items: center; gap: 80px;
+    }
+    .seasonal-text { flex: 1; }
+    .seasonal-label {
+      font-size: 11px; font-weight: 300; letter-spacing: 0.22em;
+      text-transform: uppercase; color: var(--lime); display: block; margin-bottom: 20px;
+    }
+    .seasonal-headline {
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: clamp(32px, 4vw, 52px);
+      font-weight: 700; color: var(--white);
+      line-height: 1.1; letter-spacing: -0.02em; margin-bottom: 20px;
+    }
+    .seasonal-desc {
+      font-size: 15px; font-weight: 300; color: rgba(255,255,255,0.5);
+      line-height: 1.7; margin-bottom: 40px;
+    }
+    .btn-lime {
+      display: inline-block; background: var(--lime); color: var(--black);
+      font-size: 13px; font-weight: 500; letter-spacing: 0.08em;
+      padding: 14px 36px; border-radius: 9999px; text-decoration: none;
+      transition: transform 0.25s, box-shadow 0.25s;
+    }
+    .btn-lime:hover {
+      transform: scale(1.03);
+      box-shadow: 0 8px 28px rgba(200,241,53,0.4);
+    }
+    .seasonal-visual {
+      flex: 0 0 320px; height: 360px;
+      background: linear-gradient(135deg, #1f2d0a, #2d4a0f, #0f1f04);
+      position: relative; overflow: hidden;
+    }
+    .seasonal-visual::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 60% 50% at 50% 50%, rgba(200,241,53,0.15) 0%, transparent 70%);
+    }
+
+    /* FOOTER */
+    footer {
+      background: var(--white); border-top: 1px solid rgba(0,0,0,0.08);
+      padding: 60px; display: flex; align-items: center; justify-content: space-between;
+    }
+    .footer-logo { font-size: 18px; font-weight: 500; letter-spacing: 0.04em; color: var(--black); text-decoration: none; }
+    .footer-info { font-size: 13px; font-weight: 300; color: var(--ash); text-align: center; line-height: 1.8; }
+    .footer-links { display: flex; gap: 32px; list-style: none; }
+    .footer-links a { font-size: 13px; font-weight: 300; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ash); text-decoration: none; transition: color 0.2s; }
+    .footer-links a:hover { color: var(--lime); }
+
+    .fade-in { opacity: 0; transform: translateY(28px); transition: opacity 0.8s ease, transform 0.8s ease; }
+    .fade-in.visible { opacity: 1; transform: translateY(0); }
+
+    @media (max-width: 768px) {
+      nav { padding: 18px 28px; }
+      .page-hero { padding: 140px 28px 80px; }
+      .menu-tabs { padding: 0 28px; overflow-x: auto; }
+      .menu-section { padding: 60px 28px 80px; }
+      .menu-list { grid-template-columns: 1fr; }
+      .menu-item:nth-child(odd), .menu-item:nth-child(even) { padding: 32px 0; border-left: none; }
+      .seasonal-highlight { flex-direction: column; padding: 48px 28px; gap: 40px; }
+      .seasonal-visual { flex: none; width: 100%; height: 220px; }
+      footer { flex-direction: column; gap: 28px; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a class="nav-logo" href="index.html">Cafe Ellie</a>
+    <ul class="nav-links">
+      <li><a href="menu.html" class="active">메뉴</a></li>
+      <li><a href="reservation.html">예약</a></li>
+      <li><a href="directions.html">오시는길</a></li>
+    </ul>
+  </nav>
+
+  <div class="page-hero">
+    <span class="page-label">Our Menu</span>
+    <h1 class="page-headline">진심을 담은<br><em>한 잔</em></h1>
+  </div>
+
+  <div class="menu-tabs">
+    <button class="tab-btn active" data-tab="espresso">에스프레소</button>
+    <button class="tab-btn" data-tab="nonespresso">논에스프레소</button>
+    <button class="tab-btn" data-tab="food">푸드</button>
+  </div>
+
+  <!-- ESPRESSO TAB -->
+  <div class="menu-section active" id="tab-espresso">
+    <span class="menu-category-label">Espresso Based</span>
+    <div class="menu-list">
+      <div class="menu-item fade-in">
+        <div class="item-info">
+          <span class="item-badge">Signature</span>
+          <div class="item-name">시그니처 라떼</div>
+          <span class="item-name-en">Signature Latte</span>
+          <p class="item-desc">에티오피아 예가체프 싱글 오리진. 꽃향기와 베리의 산미, 부드러운 스팀 밀크가 어우러집니다.</p>
+        </div>
+        <span class="item-price">₩ 6,500</span>
+      </div>
+      <div class="menu-item fade-in">
+        <div class="item-info">
+          <div class="item-name">에스프레소</div>
+          <span class="item-name-en">Espresso</span>
+          <p class="item-desc">엄선한 블렌드로 추출한 진하고 풍부한 에스프레소. 단순하지만 완벽합니다.</p>
+        </div>
+        <span class="item-price">₩ 4,000</span>
+      </div>
+      <div class="menu-item fade-in">
+        <div class="item-info">
+          <div class="item-name">아메리카노</div>
+          <span class="item-name-en">Americano</span>
+          <p class="item-desc">균형 잡힌 산미와 바디감. 뜨겁게 또는 차갑게.</p>
+        </div>
+        <span class="item-price">₩ 5,000</span>
+      </div>
+      <div class="menu-item fade-in">
+        <div class="item-info">
+          <div class="item-name">플랫 화이트</div>
+          <span class="item-name-en">Flat White</span>
+          <p class="item-desc">리스트레토 더블샷과 마이크로폼 밀크. 진하고 크리미합니다.</p>
+        </div>
+        <span class="item-price">₩ 6,000</span>
+      </div>
+      <div class="menu-item fade-in">
+        <div class="item-info">
+          <div class="item-name">카푸치노</div>
+          <span class="item-name-en">Cappuccino</span>
+          <p class="item-desc">풍성한 밀크폼과 에스프레소의 클래식한 균형.</p>
+        </div>
+        <span class="item-price">₩ 5,500</span>
+      </div>
+      <div class="menu-item fade-in">
+        <div class="item-info">
+          <div class="item-name">마키아토</div>
+          <span class="item-name-en">Macchiato</span>
+          <p class="item-desc">에스프레소 위에 소량의 스팀 밀크. 강렬하고 짧습니다.</p>
+        </div>
+        <span class="item-price">₩ 5,000</span>
+      </div>
+    </div>
+
+    <div class="seasonal-highlight fade-in">
+      <div class="seasonal-text">
+        <span class="seasonal-label">This Season</span>
+        <div class="seasonal-headline">봄의 첫 잔</div>
+        <p class="seasonal-desc">봄을 담은 특별한 라떼. 제주 유채꿀과 카다멈을 더했습니다. 4월까지만 만날 수 있어요.</p>
+        <a href="reservation.html" class="btn-lime">예약하기</a>
+      </div>
+      <div class="seasonal-visual"></div>
+    </div>
+  </div>
+
+  <!-- NON-ESPRESSO TAB -->
+  <div class="menu-section" id="tab-nonespresso">
+    <span class="menu-category-label">Non-Espresso</span>
+    <div class="menu-list">
+      <div class="menu-item fade-in">
+        <div class="item-info">
+          <span class="item-badge">Signature</span>
+          <div class="item-name">콜드브루</div>
+          <span class="item-name-en">Cold Brew</span>
+          <p class="item-desc">24시간 저온 추출. 쓰지 않고, 달지 않고, 깊습니다. 과테말라 안티구아 단일 산지.</p>
+        </div>
+        <span class="item-price">₩ 7,000</span>
+      </div>
+      <div class="menu-item fade-in">
+        <div class="item-info">
+          <div class="item-name">콜드브루 라떼</div>
+          <span class="item-name-en">Cold Brew Latte</span>
+          <p class="item-desc">콜드브루에 우유를 더해 부드럽게. 오후의 리프레시.</p>
+        </div>
+        <span class="item-price">₩ 7,500</span>
+      </div>
+      <div class="menu-item fade-in">
+        <div class="item-info">
+          <div class="item-name">드립 커피</div>
+          <span class="item-name-en">Pour Over</span>
+          <p class="item-desc">핸드드립으로 정성스럽게. 오늘의 싱글 오리진으로 제공됩니다.</p>
+        </div>
+        <span class="item-price">₩ 8,000</span>
+      </div>
+      <div class="menu-item fade-in">
+        <div class="item-info">
+          <div class="item-name">시즌 음료</div>
+          <span class="item-name-en">Seasonal Special</span>
+          <p class="item-desc">계절이 바뀔 때마다 새로운 이야기. 지금 이 계절에만 만납니다.</p>
+        </div>
+        <span class="item-price">₩ 7,500</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOD TAB -->
+  <div class="menu-section" id="tab-food">
+    <span class="menu-category-label">Food & Pastry</span>
+    <div class="menu-list">
+      <div class="menu-item fade-in">
+        <div class="item-info">
+          <div class="item-name">크루아상</div>
+          <span class="item-name-en">Croissant</span>
+          <p class="item-desc">매일 아침 직접 굽는 버터 크루아상. 겹겹이 쌓인 바삭함.</p>
+        </div>
+        <span class="item-price">₩ 4,500</span>
+      </div>
+      <div class="menu-item fade-in">
+        <div class="item-info">
+          <div class="item-name">바나나 브레드</div>
+          <span class="item-name-en">Banana Bread</span>
+          <p class="item-desc">촉촉하고 진한 바나나의 단맛. 오후의 작은 위로.</p>
+        </div>
+        <span class="item-price">₩ 5,000</span>
+      </div>
+      <div class="menu-item fade-in">
+        <div class="item-info">
+          <div class="item-name">스콘</div>
+          <span class="item-name-en">Scone</span>
+          <p class="item-desc">플레인과 얼그레이 두 가지. 클로티드 크림과 함께.</p>
+        </div>
+        <span class="item-price">₩ 4,000</span>
+      </div>
+      <div class="menu-item fade-in">
+        <div class="item-info">
+          <div class="item-name">오늘의 케이크</div>
+          <span class="item-name-en">Cake of the Day</span>
+          <p class="item-desc">매일 달라지는 케이크. 오늘은 무엇일까요.</p>
+        </div>
+        <span class="item-price">₩ 7,000</span>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <a class="footer-logo" href="index.html">Cafe Ellie</a>
+    <div class="footer-info">
+      서울시 마포구 연남동 000-00<br>
+      Mon–Fri 09:00–21:00 · Sat–Sun 10:00–22:00<br>
+      hello@cafeellie.kr
+    </div>
+    <ul class="footer-links">
+      <li><a href="menu.html">메뉴</a></li>
+      <li><a href="reservation.html">예약</a></li>
+      <li><a href="directions.html">오시는길</a></li>
+    </ul>
+  </footer>
+
+  <script>
+    // Tab switching
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.menu-section').forEach(s => s.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+        // Re-trigger fade-ins
+        setTimeout(() => observeAll(), 50);
+      });
+    });
+
+    function observeAll() {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.1 });
+      document.querySelectorAll('.fade-in:not(.visible)').forEach(el => observer.observe(el));
+    }
+    observeAll();
+  </script>
+</body>
+</html>

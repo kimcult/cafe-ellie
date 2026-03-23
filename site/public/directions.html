@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>오시는길 — Cafe Ellie</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --white: #ffffff;
+      --off-white: #F9F9F7;
+      --black: #0A0A0A;
+      --ash: #6B6B6B;
+      --lime: #C8F135;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', 'Noto Sans KR', -apple-system, sans-serif;
+      background: var(--white);
+      color: var(--black);
+      overflow-x: hidden;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 28px 60px;
+      background: rgba(255,255,255,0.88);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+    }
+    .nav-logo { font-size: 18px; font-weight: 500; letter-spacing: 0.04em; color: var(--black); text-decoration: none; }
+    .nav-links { display: flex; gap: 40px; list-style: none; }
+    .nav-links a { font-size: 13px; font-weight: 300; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ash); text-decoration: none; transition: color 0.2s; }
+    .nav-links a:hover, .nav-links a.active { color: var(--black); }
+
+    /* HERO */
+    .page-hero {
+      padding-top: 140px;
+      background: var(--white);
+    }
+
+    /* MAP AREA */
+    .map-area {
+      position: relative;
+      height: 55vh;
+      min-height: 420px;
+      background: #e8e4df;
+      overflow: hidden;
+    }
+    /* Stylized map representation */
+    .map-canvas {
+      position: absolute; inset: 0;
+      background:
+        linear-gradient(180deg, #ede9e3 0%, #e0dbd4 100%);
+    }
+    /* Grid lines (streets) */
+    .map-canvas::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(0,0,0,0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,0,0,0.06) 1px, transparent 1px);
+      background-size: 48px 48px;
+    }
+    /* Main roads */
+    .map-canvas::after {
+      content: '';
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.9) 3px, transparent 3px),
+        linear-gradient(90deg, rgba(255,255,255,0.9) 3px, transparent 3px);
+      background-size: 144px 144px;
+      background-position: 24px 24px;
+    }
+    .map-pin {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+      animation: pinBounce 2.5s ease-in-out infinite;
+    }
+    .map-pin-dot {
+      width: 20px; height: 20px; border-radius: 50%;
+      background: var(--lime);
+      border: 3px solid var(--black);
+      box-shadow: 0 0 0 6px rgba(200,241,53,0.25);
+    }
+    .map-pin-line {
+      width: 2px; height: 28px; background: var(--black);
+    }
+    .map-pin-label {
+      background: var(--black); color: var(--white);
+      font-size: 12px; font-weight: 500; letter-spacing: 0.08em;
+      padding: 6px 14px;
+      white-space: nowrap;
+      border-radius: 4px;
+    }
+    .map-blocks {
+      position: absolute; inset: 0; z-index: 1;
+    }
+    /* Decorative building blocks */
+    .block {
+      position: absolute;
+      background: rgba(0,0,0,0.07);
+      border-radius: 2px;
+    }
+    @keyframes pinBounce {
+      0%, 100% { transform: translate(-50%, -50%); }
+      50% { transform: translate(-50%, calc(-50% - 8px)); }
+    }
+
+    /* INFO SECTION */
+    .info-section {
+      padding: 100px 60px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+    }
+    .info-col {
+      padding: 0 60px 0 0;
+      border-right: 1px solid rgba(0,0,0,0.07);
+    }
+    .info-col + .info-col {
+      padding: 0 0 0 60px;
+      border-right: none;
+    }
+    .info-label {
+      font-size: 11px; font-weight: 300; letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--lime); display: block; margin-bottom: 40px;
+    }
+    .info-headline {
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: clamp(36px, 4vw, 56px);
+      font-weight: 700; line-height: 1.05; letter-spacing: -0.02em;
+      color: var(--black); margin-bottom: 48px;
+    }
+    .address-text {
+      font-size: 22px; font-weight: 300; line-height: 1.7; color: var(--black);
+      margin-bottom: 8px;
+    }
+    .address-sub {
+      font-size: 14px; font-weight: 300; color: var(--ash); margin-bottom: 40px;
+    }
+    .btn-directions {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: var(--lime); color: var(--black);
+      font-size: 13px; font-weight: 500; letter-spacing: 0.08em;
+      padding: 14px 32px; border-radius: 9999px; text-decoration: none;
+      transition: transform 0.25s, box-shadow 0.25s;
+    }
+    .btn-directions:hover {
+      transform: scale(1.03);
+      box-shadow: 0 8px 28px rgba(200,241,53,0.4);
+    }
+    .arrow { font-size: 16px; }
+
+    /* TRANSPORT */
+    .transport-list { list-style: none; }
+    .transport-item {
+      display: flex; gap: 20px; align-items: flex-start;
+      padding: 28px 0;
+      border-bottom: 1px solid rgba(0,0,0,0.07);
+    }
+    .transport-item:first-child { padding-top: 0; }
+    .transport-icon {
+      flex: 0 0 40px; height: 40px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; background: var(--off-white);
+    }
+    .transport-info {}
+    .transport-name {
+      font-size: 16px; font-weight: 500; color: var(--black);
+      margin-bottom: 6px; letter-spacing: 0.01em;
+    }
+    .transport-desc {
+      font-size: 14px; font-weight: 300; color: var(--ash); line-height: 1.65;
+    }
+    .transport-badge {
+      display: inline-block;
+      font-size: 11px; font-weight: 500; letter-spacing: 0.08em;
+      padding: 2px 10px; border-radius: 9999px;
+      margin-right: 4px; margin-bottom: 4px;
+    }
+    .badge-green { background: #3aba4b; color: white; }
+    .badge-brown { background: #9b5b2a; color: white; }
+    .badge-blue { background: #2563eb; color: white; }
+
+    /* HOURS SECTION */
+    .hours-section {
+      background: var(--black);
+      padding: 100px 60px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+    }
+    .hours-headline {
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: clamp(32px, 4vw, 52px);
+      font-weight: 700; line-height: 1.1; letter-spacing: -0.02em;
+      color: var(--white); margin-bottom: 20px;
+    }
+    .hours-sub { font-size: 15px; font-weight: 300; color: rgba(255,255,255,0.4); }
+    .hours-table { width: 100%; }
+    .hours-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 20px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .hours-day { font-size: 14px; font-weight: 300; color: rgba(255,255,255,0.5); letter-spacing: 0.05em; }
+    .hours-time { font-size: 16px; font-weight: 400; color: var(--white); }
+    .hours-time.highlight { color: var(--lime); }
+    .hours-closed { color: rgba(255,255,255,0.3); font-size: 14px; }
+
+    /* CONTACT BAND */
+    .contact-band {
+      padding: 80px 60px;
+      background: var(--off-white);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .contact-info-block {}
+    .contact-label { font-size: 11px; font-weight: 300; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ash); display: block; margin-bottom: 12px; }
+    .contact-value { font-size: 22px; font-weight: 400; color: var(--black); }
+    .contact-actions { display: flex; gap: 16px; }
+    .btn-contact {
+      display: inline-block;
+      border: 1px solid rgba(0,0,0,0.2); color: var(--black);
+      font-size: 13px; font-weight: 400; letter-spacing: 0.08em;
+      padding: 14px 32px; border-radius: 9999px; text-decoration: none;
+      transition: border-color 0.25s, background 0.25s, color 0.25s;
+    }
+    .btn-contact:hover { border-color: var(--lime); background: var(--lime); }
+    .btn-contact.primary { background: var(--black); color: var(--white); border-color: var(--black); }
+    .btn-contact.primary:hover { background: var(--lime); color: var(--black); border-color: var(--lime); }
+
+    /* FOOTER */
+    footer {
+      background: var(--white); border-top: 1px solid rgba(0,0,0,0.08);
+      padding: 60px; display: flex; align-items: center; justify-content: space-between;
+    }
+    .footer-logo { font-size: 18px; font-weight: 500; letter-spacing: 0.04em; color: var(--black); text-decoration: none; }
+    .footer-info { font-size: 13px; font-weight: 300; color: var(--ash); text-align: center; line-height: 1.8; }
+    .footer-links { display: flex; gap: 32px; list-style: none; }
+    .footer-links a { font-size: 13px; font-weight: 300; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ash); text-decoration: none; transition: color 0.2s; }
+    .footer-links a:hover { color: var(--lime); }
+
+    .fade-in { opacity: 0; transform: translateY(24px); transition: opacity 0.8s ease, transform 0.8s ease; }
+    .fade-in.visible { opacity: 1; transform: translateY(0); }
+
+    @media (max-width: 768px) {
+      nav { padding: 18px 24px; }
+      .nav-links { display: none; }
+      .info-section { grid-template-columns: 1fr; padding: 60px 24px; }
+      .info-col { border-right: none; padding: 0 0 60px; }
+      .info-col + .info-col { padding: 60px 0 0; border-top: 1px solid rgba(0,0,0,0.07); }
+      .hours-section { grid-template-columns: 1fr; gap: 40px; padding: 60px 24px; }
+      .contact-band { flex-direction: column; gap: 32px; padding: 60px 24px; text-align: center; }
+      footer { flex-direction: column; gap: 28px; text-align: center; padding: 48px 24px; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a class="nav-logo" href="index.html">Cafe Ellie</a>
+    <ul class="nav-links">
+      <li><a href="menu.html">메뉴</a></li>
+      <li><a href="reservation.html">예약</a></li>
+      <li><a href="directions.html" class="active">오시는길</a></li>
+    </ul>
+  </nav>
+
+  <!-- MAP -->
+  <div class="map-area" style="margin-top: 80px;">
+    <div class="map-canvas"></div>
+    <div class="map-blocks">
+      <!-- Decorative blocks representing buildings -->
+      <div class="block" style="width:80px;height:60px;top:15%;left:10%;"></div>
+      <div class="block" style="width:120px;height:80px;top:20%;left:25%;"></div>
+      <div class="block" style="width:60px;height:90px;top:12%;left:62%;"></div>
+      <div class="block" style="width:100px;height:55px;top:18%;left:75%;"></div>
+      <div class="block" style="width:90px;height:70px;top:60%;left:8%;"></div>
+      <div class="block" style="width:70px;height:80px;top:65%;left:20%;"></div>
+      <div class="block" style="width:110px;height:65px;top:62%;left:65%;"></div>
+      <div class="block" style="width:80px;height:55px;top:58%;left:80%;"></div>
+    </div>
+    <div class="map-pin">
+      <div class="map-pin-dot"></div>
+      <div class="map-pin-line"></div>
+      <div class="map-pin-label">Cafe Ellie</div>
+    </div>
+  </div>
+
+  <!-- INFO -->
+  <div class="info-section">
+    <div class="info-col fade-in">
+      <span class="info-label">Address</span>
+      <h2 class="info-headline">찾아오는 길</h2>
+      <div class="address-text">서울시 마포구 연남동 000-00</div>
+      <div class="address-sub">Yeonnam-dong, Mapo-gu, Seoul · 04003</div>
+      <a href="https://map.naver.com" target="_blank" rel="noopener noreferrer" class="btn-directions">
+        네이버 지도로 보기 <span class="arrow">→</span>
+      </a>
+    </div>
+
+    <div class="info-col fade-in">
+      <span class="info-label">Transportation</span>
+      <h2 class="info-headline">교통편</h2>
+      <ul class="transport-list">
+        <li class="transport-item">
+          <div class="transport-icon">🚇</div>
+          <div class="transport-info">
+            <div class="transport-name">지하철</div>
+            <p class="transport-desc">
+              <span class="transport-badge badge-green">2호선</span> 홍대입구역 3번 출구<br>
+              도보 8분 · 경의중앙선 연남역 1번 출구 도보 5분
+            </p>
+          </div>
+        </li>
+        <li class="transport-item">
+          <div class="transport-icon">🚌</div>
+          <div class="transport-info">
+            <div class="transport-name">버스</div>
+            <p class="transport-desc">
+              <span class="transport-badge badge-blue">간선</span> 271, 602번<br>
+              연남동 정류장 하차 후 도보 2분
+            </p>
+          </div>
+        </li>
+        <li class="transport-item">
+          <div class="transport-icon">🚗</div>
+          <div class="transport-info">
+            <div class="transport-name">주차</div>
+            <p class="transport-desc">
+              매장 전용 주차장 없음<br>
+              인근 연남동 공영주차장 이용 (도보 3분)
+            </p>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- HOURS -->
+  <div class="hours-section fade-in">
+    <div>
+      <span class="info-label" style="color: rgba(255,255,255,0.3);">Hours</span>
+      <div class="hours-headline">언제든<br>오세요</div>
+      <p class="hours-sub">공휴일 영업 여부는 SNS에서 확인해주세요</p>
+    </div>
+    <div>
+      <div class="hours-table">
+        <div class="hours-row">
+          <span class="hours-day">월요일 — 금요일</span>
+          <span class="hours-time highlight">09:00 — 21:00</span>
+        </div>
+        <div class="hours-row">
+          <span class="hours-day">토요일</span>
+          <span class="hours-time">10:00 — 22:00</span>
+        </div>
+        <div class="hours-row">
+          <span class="hours-day">일요일</span>
+          <span class="hours-time">10:00 — 22:00</span>
+        </div>
+        <div class="hours-row">
+          <span class="hours-day">명절 연휴</span>
+          <span class="hours-closed">별도 공지</span>
+        </div>
+        <div class="hours-row" style="border-bottom:none;">
+          <span class="hours-day">라스트 오더</span>
+          <span class="hours-time" style="color:rgba(255,255,255,0.5); font-size:14px;">마감 30분 전</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTACT -->
+  <div class="contact-band fade-in">
+    <div class="contact-info-block">
+      <span class="contact-label">Contact</span>
+      <div class="contact-value">hello@cafeellie.kr</div>
+    </div>
+    <div class="contact-actions">
+      <a href="tel:020000000" class="btn-contact primary">전화하기</a>
+      <a href="reservation.html" class="btn-contact">예약하기</a>
+    </div>
+  </div>
+
+  <footer>
+    <a class="footer-logo" href="index.html">Cafe Ellie</a>
+    <div class="footer-info">
+      서울시 마포구 연남동 000-00<br>
+      Mon–Fri 09:00–21:00 · Sat–Sun 10:00–22:00<br>
+      hello@cafeellie.kr
+    </div>
+    <ul class="footer-links">
+      <li><a href="menu.html">메뉴</a></li>
+      <li><a href="reservation.html">예약</a></li>
+      <li><a href="directions.html">오시는길</a></li>
+    </ul>
+  </footer>
+
+  <script>
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.fade-in').forEach((el, i) => {
+      el.style.transitionDelay = (i * 0.1) + 's';
+      observer.observe(el);
+    });
+  </script>
+</body>
+</html>
